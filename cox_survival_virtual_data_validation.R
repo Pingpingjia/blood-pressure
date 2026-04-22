@@ -1,13 +1,19 @@
+if (!requireNamespace("survival", quietly = TRUE)) {
+  stop("Package 'survival' is required. Please run install.packages('survival').")
+}
 library(survival)
 
 set.seed(123)
 n <- 300
 
 covariate <- rnorm(n, mean = 0, sd = 1)
+# Baseline event rate for the simulated cohort.
 baseline_hazard <- 0.08
+# log(1.5) corresponds to a hazard ratio of 1.5 per 1 SD increase in covariate.
 beta <- log(1.5)
 
 event_time <- rexp(n, rate = baseline_hazard * exp(beta * covariate))
+# Independent censoring rate chosen to create a mix of events and censored samples.
 censor_time <- rexp(n, rate = 0.05)
 
 time <- pmin(event_time, censor_time)
