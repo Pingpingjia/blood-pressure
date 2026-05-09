@@ -3,12 +3,17 @@ library(openxlsx)
 library(dplyr)
 
 # 路径前缀（请根据实际情况修改）
-# 注意：此脚本专门用于处理血压相关表型
-# 血压表型包括：sbp, dbp, pp, map, hypertension（共5个表型）
-prefix <- "D:/OneDrive/工作/1.工作/blood pressure/"
+# 注意：此脚本用于处理所有表型（血压、血脂、肥胖、血糖）
+# 数据路径需要指向包含所有表型的完整数据集
+prefix <- "D:/OneDrive/工作/1.工作/comorbidity/results/combined_results_11/"
 
-## 包含血压相关表型的观察性研究和MR分析结果
-## 血压表型：sbp, dbp, pp, map, hypertension
+## 包含所有表型的观察性研究和MR分析结果
+## 表型组包括：
+## - 血压: sbp, dbp, pp, map, hypertension
+## - 血脂: ldlc, hdlc, tg
+## - 血糖: glu, diabetes, fbg
+## - 肥胖: bmi, wc, whr
+
 sheet_content <- list(
   data.frame(),  # S1: Characteristics (需要手动填入或从其他源读取)
   function() read.table(paste0(prefix, "model_1/obs_all_results.txt"), header = TRUE, sep = "\t", check.names = FALSE),
@@ -17,7 +22,7 @@ sheet_content <- list(
   data.frame(),  # S5: GWAS Summary Data (需要手动填入或从其他源读取)
   function() read.table(paste0(prefix, "mr/mr_all_results.txt"), header = TRUE, sep = "\t", check.names = FALSE),
   function() read.table(paste0(prefix, "gsmr/gsmr_all_results.txt"), header = TRUE, sep = "\t", check.names = FALSE),
-  function() read.table(paste0(prefix, "hyprcoloc/hyprcoloc_all_significant_results.txt"), header = TRUE, sep = "\t", check.names = FALSE),
+  function() read.table(paste0(prefix, "outcome_hyprcoloc_processed/combined_hyprcoloc_results_3.txt"), header = TRUE, sep = "\t", check.names = FALSE),
   function() read.table(paste0(prefix, "model_1/merged_obs_allmr_hyprcoloc.txt"), header = TRUE, sep = "\t", check.names = FALSE),
   function() read.table(paste0(prefix, "model_2/merged_obs_allmr_hyprcoloc.txt"), header = TRUE, sep = "\t", check.names = FALSE),
   function() read.table(paste0(prefix, "model_3/merged_obs_allmr_hyprcoloc.txt"), header = TRUE, sep = "\t", check.names = FALSE),
@@ -27,27 +32,26 @@ sheet_content <- list(
   function() read.table(paste0(prefix, "sg_model_3/obs_all_results.txt"), header = TRUE, sep = "\t", check.names = FALSE)
 )
 
-
 # 创建 workbook
 wb <- createWorkbook()
 
 # 每个sheet的表头
 sheet_headers <- c(
   "Characteristics of the Study Population in Discovery and Validation Cohorts",
-  "Regression Results of Model 1 for Blood Pressure Phenotypes and All Proteins",
-  "Regression Results of Model 2 for Blood Pressure Phenotypes and All Proteins",
-  "Regression Results of Model 3 for Blood Pressure Phenotypes and All Proteins",
+  "Regression Results of Model 1 for All Phenotypes (Blood Pressure, Lipids, Glucose, Obesity) and All Proteins",
+  "Regression Results of Model 2 for All Phenotypes (Blood Pressure, Lipids, Glucose, Obesity) and All Proteins",
+  "Regression Results of Model 3 for All Phenotypes (Blood Pressure, Lipids, Glucose, Obesity) and All Proteins",
   "GWAS Summary Data Included for Mendelian Randomization (MR) Analysis",
-  "Two-Sample Mendelian Randomization(Two-sample MR) Results for Blood Pressure Phenotypes",
-  "Generalized Summary Mendelian Randomization (GSMR) Results for Blood Pressure Phenotypes",
-  "Colocalization Results between Proteins and blood pressure Phenotypes",
-  "Integrated Results of Model 1, Two-sample MR, GSMR, and Colocalization for Blood Pressure Phenotypes",
-  "Integrated Results of Model 2, Two-sample MR, GSMR, and Colocalization for Blood Pressure Phenotypes",
-  "Integrated Results of Model 3, Two-sample MR, GSMR, and Colocalization for Blood Pressure Phenotypes",
+  "Two-Sample Mendelian Randomization (Two-sample MR) Results for All Phenotypes",
+  "Generalized Summary Mendelian Randomization (GSMR) Results for All Phenotypes",
+  "Colocalization Results between Proteins and All Phenotypes",
+  "Integrated Results of Model 1, Two-sample MR, GSMR, and Colocalization for All Phenotypes",
+  "Integrated Results of Model 2, Two-sample MR, GSMR, and Colocalization for All Phenotypes",
+  "Integrated Results of Model 3, Two-sample MR, GSMR, and Colocalization for All Phenotypes",
   "The Detailed Information (location and drug) of the Identified Core Proteins",
-  "Regression results of model 1 for the Blood Pressure Phenotypes and all the proteins in the validation cohort",
-  "Regression results of model 2 for the Blood Pressure Phenotypes and all the proteins in the validation cohort",
-  "Regression results of model 3 for the Blood Pressure Phenotypes and all the proteins in the validation cohort"
+  "Regression results of model 1 for All Phenotypes and all the proteins in the validation cohort",
+  "Regression results of model 2 for All Phenotypes and all the proteins in the validation cohort",
+  "Regression results of model 3 for All Phenotypes and all the proteins in the validation cohort"
 )
 
 # ============================================================
@@ -156,7 +160,7 @@ for (i in seq_along(sheet_content)) {
 # ============================================================
 # ✅ 保存文件
 # ============================================================
-output_file <- paste0(prefix, "supplementary_blood_pressure.xlsx")
+output_file <- paste0(prefix, "supplementary_all_phenotypes.xlsx")
 cat(sprintf("Saving workbook to: %s\n", output_file))
 
 tryCatch({
@@ -251,11 +255,9 @@ tryCatch({
 
 cat("\n脚本执行完成！\n")
 cat("=================================================\n")
-cat("此脚本专门处理血压相关表型：\n")
-cat("  - SBP (收缩压)\n")
-cat("  - DBP (舒张压)\n")
-cat("  - PP (脉压)\n")
-cat("  - MAP (平均动脉压)\n")
-cat("  - Hypertension (高血压)\n")
+cat("此脚本处理所有表型组：\n")
+cat("  - 血压 (Blood Pressure): sbp, dbp, pp, map, hypertension\n")
+cat("  - 血脂 (Lipids): ldlc, hdlc, tg\n")
+cat("  - 血糖 (Glucose): glu, diabetes, fbg\n")
+cat("  - 肥胖 (Obesity): bmi, wc, whr\n")
 cat("=================================================\n")
-
